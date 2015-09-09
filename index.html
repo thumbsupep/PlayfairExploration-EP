@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+  <title>D3.js William Playfair Replication</title>
+
+  <link href="mystyle.css" rel="stylesheet" type="text/css">
+  <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js' type='text/javascript' charset='utf-8'></script>
+   <script src="d3.min.js"></script>
+   <script src="underscore-min.js"></script>
+   <script src="d3-transform.js"></script>
+  <script src = 'myscript.js' type="text/javascript"></script>
+</head>
+<body>
+  
+    <div id="innerWrapper">
+      <div id="input-box">
+        <select id="country"></select>
+      </div>
+      <div id="canvasDiv">
+        <svg id="canvasSVG">
+<!--         <filter id="inset-shadow-rose" x="-50%" y="-50%" width="200%" height="200%">
+        <feComponentTransfer in="SourceAlpha">
+          <feFuncA type="table" tableValues="1 0" />
+        </feComponentTransfer>
+        <feGaussianBlur stdDeviation="5" result="blur"/>
+        <feOffset dx="0" dy="0" result="offsetblur"/>
+        <feFlood flood-color="rgb(255,228,225)" result="color"/>
+        <feComposite in2="offsetblur" operator="in"/>
+        <feComposite in2="SourceAlpha" operator="in" />
+        <feMerge>
+          <feMergeNode in="SourceGraphic" />
+          <feMergeNode />
+        </feMerge>
+      </filter> -->
+<!--     <defs>
+  <pattern id="img1" patternUnits="userSpaceOnUse" width="700" height="700">
+    <image xlink:href="bkg.jpg" x="0" y="-100" width="700" height="700" />
+  </pattern>
+</defs> -->
+    </svg>
+      </div> <!--end canvasDiv-->
+    </div>
+
+</body>
+</html>
