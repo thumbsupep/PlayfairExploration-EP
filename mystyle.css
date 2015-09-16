@@ -1,34 +1,54 @@
+body {
+  font-family: 'Dancing Script', cursive;
+  background: #F3ECCB;
+}
+
 g.axis line, g.axis path {
     fill:none;
     stroke: #000;
+}
+
+g.tick {
+    font-size: 12px;
+}
+
+.axis-labels{
+    font-family: 'Times New Roman', serif;
 }
 
 .axis text {
     font-style: italic;
 }
 
-.visible {
-    visibility: visible;
-}
+@font-face {
+            src: local("Times");
+            font-family: embeddedTimes;
+            advancedAntiAliasing: true;
+            fontWeight: bold;
+        }
+@font-face {
+    font-family: 'chancery_cursiveitalic';
+    src: url('../fonts/chancur-webfont.eot');
+    src: url('../fonts/chancur-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/chancur-webfont.woff2') format('woff2'),
+         url('../fonts/chancur-webfont.woff') format('woff'),
+         url('../fonts/chancur-webfont.ttf') format('truetype'),
+         url('../fonts/hancur-webfont.svg#chancery_cursiveitalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-size: 120%;
 
-#country{
-        	font-size:x-large;
-        	font-family: 'rockwell' ;
-        	fill:black;
-        	stroke:black;
 }
 
 @font-face {
-    font-family: cursive;
-    src: url(cursive.ttf);
-}
-
-@font-face {
-    font-family: oldschool;
-    src: url(oldschool.ttf);
-}
-
-@font-face {
-    font-family: line;
-    src: url(line.ttf);
+    font-family: 'maranalloregular';
+    src: url('../fonts/maranallo-webfont.eot');
+    src: url('../fonts/maranallo-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/maranallo-webfont.woff2') format('woff2'),
+         url('../fonts/maranallo-webfont.woff') format('woff'),
+         url('../fonts/maranallo-webfont.ttf') format('truetype'),
+         url('../fonts/maranallo-webfont.svg#maranalloregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-size: 120%;
 }

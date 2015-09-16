@@ -17,7 +17,7 @@ var height = 800 - margin.top - margin.bottom,
 var yScale = d3.scale.linear().range([height,0]);
 var xScale = d3.time.scale().range([0, width]);
 
-//creates a list for the dropdown options bar out of all of the different country names.
+//creates options of country names for the select box
 function addList(){
     var select = document.getElementById("country");
     for(var i = 0; i <= countryNames.length; ++i) {
@@ -26,6 +26,7 @@ function addList(){
         select.add(option, 0);
       }
       $('#country option[value="European Union"]').prop('selected',true); //sets the selected country to be EU
+      $('#country option[value="undefined"]').remove(); //for some reason, "undefined" is the first entry. we must remove it after the fact
      }
 
 //when a new country is selected, this function removes all objects with the class "currValue" and calls drawChart with the ctycode of the country selected.
@@ -38,15 +39,31 @@ $("#country").change(function(){
     })    
 })
 
+//creating a D3 tick formatter for later use
+//returns y-axis tickmark labels formatted according to historical visualization
+    var tickFormatterY = function(tickVal){
+        if((tickVal/1000000) == 1){ //if the value is 1, omit s
+            return ("1 Million");
+        }else if((tickVal/1000000)%1 === 0){ //if the value is not 1, add an s
+            return (tickVal/1000000 + " Millions");
+        }else if (tickVal === 200000){ //first number on y-axis...might need to change to adapt for other data 
+            return tickVal.toLocaleString(); //adds the comma back into the number, for some reason comes in with comma but returns without 
+        }else if(tickVal < 1000000){ //less than 1 million but not the first y-value
+            return tickVal/100000;
+        }else{ //return the decimal numbers 
+            return (tickVal/1000000);
+        }
+    };
+
 //creating the "canvas" to draw on. an svg element
-var canvas = d3.select('#canvasSVG')//.append('svg') normally you append svg to a div here, 
-//but due to the fade-in functionality, we had to create the svg in the .html file
+var canvas = d3.select('#canvasSVG')//.append('svg') normally you append an svg to a div here, 
+//but due to the fade-in functionality, I had to create the svg in the .html file
     //.style('background', 'mistyrose')
     .style('background-image',"url('bkg.jpg')")
     .style('background-size',"1200px 800px")
     .attr('width', width + margin.left + margin.right)
     .attr('height', height + margin.top + margin.bottom)
-    //.attr("filter", "url(#inset-shadow-rose)")
+    //.attr("filter", "url(#inset-shadow-rose)") //ended up not using the fade-in
     
 
 //rectangular borders around graph
@@ -105,6 +122,8 @@ function drawChart(ctyCode){
     xmin = 5000;
     xmax = 0;
     ymax = 0;
+
+    //must go through array to get min/max because I can't do d3.max(currdata.year) because currdata is no longer a csv format. it's an array of objects.
     for (i in currdata)
     {
         if(currdata[i].year > xmax)
@@ -192,18 +211,15 @@ function drawChart(ctyCode){
                                 .y1(height)
                                 .interpolate("basis");
 
-      //populate the defs html tag                          
-    var defs = chart.append('defs').attr("class", "currValue"); //defs is a d3 tag just like svg, path, or rect
-
-    //add some clipPaths inside defs
-    defs.append("clipPath")
+    //define clipping paths
+    chart.append("clipPath")
         .attr("id", "clip-import")
         .attr("class", "currValue")
         .append("path")
         .datum(currdata)
         .attr("d", areaAboveImportLine);
 
-    defs.append("clipPath")
+    chart.append("clipPath")
         .attr("id", "clip-export")
         .attr("class","currValue")
         .append("path")
@@ -274,14 +290,14 @@ function drawChart(ctyCode){
     //axis labels
     var rotateTranslate = d3.svg.transform().rotate(-90).translate(-height/2,-7); //translate method defined with parameters y,x and in cartesian coordinate plane
     chart.append('text')
+        .attr("class","axis-labels")
         .attr('text-anchor','middle')
         .attr('transform',rotateTranslate) //text must be rotate parallel to y-axis
-        .style("font-weight","bold") //alternatively, could have added a class and styled in mystyle.css
         .text('Money (millions of dollars)') //labeled w/millions instead of formatting y-axis b/c easier
     chart.append('text')
+        .attr("class","axis-labels")
         .attr('text-anchor','middle')
         .attr('transform','translate(' + width/2 + ',' + -25 + ')')
-        .style("font-weight","bold")
         .text('Time')
 
 
@@ -289,6 +305,7 @@ function drawChart(ctyCode){
 //*********************************************WRITE TEXT************************************//
     //TODO: text in area. "BALANCE in FAVOR of USA" (not possible)
     //TODO: change offset based on intersection of paths. (not possible)
+    //TODO: wrap text inside circle (note: D3 does a bad job of making SVG elements aware of eachother)
 
     //text along line graph
     var expText = chart.append('text').attr("dy", "-10px")
@@ -310,7 +327,9 @@ function drawChart(ctyCode){
         .style("font-size",'20px')
         .text("Line of Imports to USA") //must say to USA b/c we cant put the "in favor of" text in the area
 
-//make a pattern for circle bkg. this is how you add a background to an svg element
+//make a pattern for circle bkg. patterns are how you add a background to an svg element
+var defs = chart.append('defs').attr("class", "currValue"); //first you have to instantiate the defs tag so we can append a pattern to it
+//defs is used when you want to embed definitions to reuse inside an svg element
     defs.append("pattern")
         .attr("id","bkg")
         .attr("patternUnits","userSpaceOnUse")
@@ -321,34 +340,36 @@ function drawChart(ctyCode){
             .attr('width',700)
             .attr('height',700)
             .attr('y',-100)
+
     //circle with title text
     var title = canvas.append("g")
+        .attr("class", "currValue")
     title.append("ellipse")
             .attr("id", "currValue")
-            .attr("cx", 200)
+            .attr("cx", 210)
             .attr("cy", 150)
-            .attr("rx", 170)
+            .attr("rx", 180)
             .attr("ry",120)
             .attr("fill", "url(#bkg)")
             .attr("stroke", "black")
             .attr("stroke-width", 1);
     title.append("text")
         .attr('text-anchor','middle')
-        .attr('transform','translate(' + 200 + ',' + 115 + ')')
-        .style('font-family','oldschool')
-        .style('font-size','30px')
+        .attr('transform','translate(' + 210 + ',' + 115 + ')')
+        .style('font-family','maranalloregular')
+        .style('font-size','xx-large')
         .text("Exports and Imports")
     title.append("text")
         .attr('text-anchor','middle')
-        .attr('transform','translate(' + 200 + ',' + 150 + ')')
-        .style('font-family','cursive')
-        .style('font-size','40px')
+        .attr('transform','translate(' + 210 + ',' + 155 + ')')
+        .style('font-family','chancery_cursiveitalic')
+        .style('font-size','x-large')
         .text("to and from all")
     title.append("text")
         .attr('text-anchor','middle')
-        .attr('transform','translate(' + 200 + ',' + 200 + ')')
-        .style('font-family','oldschool')
-        .style('font-size','30px')
+        .attr('transform','translate(' + 210 + ',' + 200 + ')')
+        .style('font-family','maranalloregular')
+        .style('font-size','xx-large')
         .text(ctyName)
 
  } //end drawChart
