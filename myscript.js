@@ -56,14 +56,11 @@ $("#country").change(function(){
     };
 
 //creating the "canvas" to draw on. an svg element
-var canvas = d3.select('#canvasSVG')//.append('svg') normally you append an svg to a div here, 
-//but due to the fade-in functionality, I had to create the svg in the .html file
-    //.style('background', 'mistyrose')
-    .style('background-image',"url('bkg.jpg')")
+var canvas = d3.select('#canvasDiv').append('svg') 
+    .style('background-image',"url('bkg.jpg')") //style directly in d3 instead of in css file
     .style('background-size',"1200px 800px")
     .attr('width', width + margin.left + margin.right)
     .attr('height', height + margin.top + margin.bottom)
-    //.attr("filter", "url(#inset-shadow-rose)") //ended up not using the fade-in
     
 
 //rectangular borders around graph
@@ -247,9 +244,8 @@ function drawChart(ctyCode){
     var yAxis = d3.svg.axis()
         .scale(yScale)
         .orient('right')
-        .ticks(20)
-        .tickSize(-width,0,0) //creates a grid by making the ticks the width of the chart
-
+        .ticks(20) //always have 20 tick marks
+        .tickSize(-width,0) //creates a grid by making the ticks the width of the chart
     //append a group for y axis
     var yGuide = canvas.append('g')//use the yGuide variable to actually display the axis in the chart
         .attr('transform','translate('+ (width + margin.left) + ',' + margin.top + ')')
@@ -257,8 +253,10 @@ function drawChart(ctyCode){
         .call(yAxis)
         //yAxis.ticks() returns an array with one element equal to the number of ticks
         //console.log("all the points", yAxis.scale().ticks(yAxis.ticks()[0]));
+        d3.select(yGuide.selectAll(".tick")[0][0])
+                    .attr('visibility','hidden'); //hides first tick
 
-    //make every 5th tick have a thicker stroke. TODO: actually every whole million
+    //make every 5th tick have a thicker stroke. TODO: maybe make it based on the values?
     d3.selectAll("g.y.axis g.tick") //select all g elements with both class y and axis, and g elements with class tick
         .style("stroke-width",function(d,i){
             if(i%5 == 0)
@@ -277,7 +275,7 @@ function drawChart(ctyCode){
 
     //abbreviated years as labels
     d3.selectAll("g.x.axis g.tick").selectAll("text").remove() //remove tick labels
-    d3.selectAll("g.x.axis g.tick")
+    xGuide.selectAll(".tick") //g.x.axis g.tick is the same as xGuide
         .append("text") //add back re-formated tick labels
         .attr("dy",15)
         .text(function(d){ //d for ticks is the value of the tick
@@ -290,14 +288,14 @@ function drawChart(ctyCode){
     //axis labels
     var rotateTranslate = d3.svg.transform().rotate(-90).translate(-height/2,-7); //translate method defined with parameters y,x and in cartesian coordinate plane
     chart.append('text')
-        .attr("class","axis-labels")
         .attr('text-anchor','middle')
         .attr('transform',rotateTranslate) //text must be rotate parallel to y-axis
+        .style("font-family",'Times New Roman')
         .text('Money (millions of dollars)') //labeled w/millions instead of formatting y-axis b/c easier
     chart.append('text')
-        .attr("class","axis-labels")
         .attr('text-anchor','middle')
         .attr('transform','translate(' + width/2 + ',' + -25 + ')')
+        .style("font-family",'Times New Roman')
         .text('Time')
 
 

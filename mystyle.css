@@ -12,10 +12,6 @@ g.tick {
     font-size: 12px;
 }
 
-.axis-labels{
-    font-family: 'Times New Roman', serif;
-}
-
 .axis text {
     font-style: italic;
 }
