@@ -29,6 +29,31 @@ function addList(){
       $('#country option[value="undefined"]').remove(); //for some reason, "undefined" is the first entry. we must remove it after the fact
      }
 
+//a function that wraps the text for the label inside the Graph title circle. 
+function wrap(text, width) {
+  text.each(function() {
+    var text = d3.select(this),
+        words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 30, // ems
+        y = text.attr("y"),
+        dy = 10,
+        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy);
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy).text(word);
+      }
+    }
+  });
+}
+
 //when a new country is selected, this function removes all objects with the class "currValue" and calls drawChart with the ctycode of the country selected.
 $("#country").change(function(){
     $("#country option:selected").each(function(){
@@ -42,16 +67,10 @@ $("#country").change(function(){
 //creating a D3 tick formatter for later use
 //returns y-axis tickmark labels formatted according to historical visualization
     var tickFormatterY = function(tickVal){
-        if((tickVal/1000000) == 1){ //if the value is 1, omit s
-            return ("1 Million");
-        }else if((tickVal/1000000)%1 === 0){ //if the value is not 1, add an s
-            return (tickVal/1000000 + " Millions");
-        }else if (tickVal === 200000){ //first number on y-axis...might need to change to adapt for other data 
-            return tickVal.toLocaleString(); //adds the comma back into the number, for some reason comes in with comma but returns without 
-        }else if(tickVal < 1000000){ //less than 1 million but not the first y-value
-            return tickVal/100000;
-        }else{ //return the decimal numbers 
-            return (tickVal/1000000);
+        if((tickVal % 1000) === 0){ //if the value is an even billion but not 1 billion, add an s
+            return (tickVal*1000000/1000000000 );
+        }else{ //return fractions of billion
+            return (tickVal/1000);
         }
     };
 
@@ -236,7 +255,7 @@ function drawChart(ctyCode){
             .attr("d", areaBelowExportLine(currdata)) //instead of using "datum", you can also pass in currdata to the line function
             .attr("clip-path", "url(#clip-import)")
             .attr("class", "currValue")
-            .attr("fill", "green") //fill color when exports>imports
+            .attr("fill", "#ABAF7B") //fill color when exports>imports
             .attr("opacity", .5);
 
 //*********************************************CREATE AXIS************************************//
@@ -246,6 +265,7 @@ function drawChart(ctyCode){
         .orient('right')
         .ticks(20) //always have 20 tick marks
         .tickSize(-width,0) //creates a grid by making the ticks the width of the chart
+       // .tickFormat()
     //append a group for y axis
     var yGuide = canvas.append('g')//use the yGuide variable to actually display the axis in the chart
         .attr('transform','translate('+ (width + margin.left) + ',' + margin.top + ')')
@@ -258,10 +278,22 @@ function drawChart(ctyCode){
 
     //make every 5th tick have a thicker stroke. TODO: maybe make it based on the values?
     d3.selectAll("g.y.axis g.tick") //select all g elements with both class y and axis, and g elements with class tick
-        .style("stroke-width",function(d,i){
-            if(i%5 == 0)
+         .style("stroke-width",function(d,i){
+            if(i%5 == 0){
                 return 2;
+            }
         })
+        .selectAll("text").remove()
+    yGuide.selectAll(".tick") //g.x.axis g.tick is the same as yGuide.tick
+        .append("text")
+        .text(function(d,i){
+            if(i%5 == 0){
+                return tickFormatterY(d) + " Billion";
+            }
+            else
+                return tickFormatterY(d);
+        })
+        //TODO append the word billion
 
     var xAxis = d3.svg.axis()
         .scale(xScale)
@@ -274,8 +306,8 @@ function drawChart(ctyCode){
         .call(xAxis) //.call is what displays the ticks and labels
 
     //abbreviated years as labels
-    d3.selectAll("g.x.axis g.tick").selectAll("text").remove() //remove tick labels
-    xGuide.selectAll(".tick") //g.x.axis g.tick is the same as xGuide
+    xGuide.selectAll("text").remove() //remove tick labels
+    xGuide.selectAll(".tick") //g.x.axis g.tick is the same as xGuide.tick
         .append("text") //add back re-formated tick labels
         .attr("dy",15)
         .text(function(d){ //d for ticks is the value of the tick
@@ -291,7 +323,7 @@ function drawChart(ctyCode){
         .attr('text-anchor','middle')
         .attr('transform',rotateTranslate) //text must be rotate parallel to y-axis
         .style("font-family",'Times New Roman')
-        .text('Money (millions of dollars)') //labeled w/millions instead of formatting y-axis b/c easier
+        .text('Money (US dollars)')
     chart.append('text')
         .attr('text-anchor','middle')
         .attr('transform','translate(' + width/2 + ',' + -25 + ')')
@@ -365,11 +397,11 @@ var defs = chart.append('defs').attr("class", "currValue"); //first you have to 
         .text("to and from all")
     title.append("text")
         .attr('text-anchor','middle')
-        .attr('transform','translate(' + 210 + ',' + 200 + ')')
+        .attr('transform','translate(' + 210 + ',' + 180 + ')')
         .style('font-family','maranalloregular')
         .style('font-size','xx-large')
-        .text(ctyName)
-
+        .text(ctyName) //count characters, if greater than #, line break
+        .call(wrap,330)
  } //end drawChart
 
 
